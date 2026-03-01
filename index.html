@@ -152,6 +152,12 @@
 
   <div class="result-card" id="resultCard"></div>
 
+  <div id="debugBox" style="display:none;margin-top:16px;background:#1a1a2e;color:#00ff88;font-family:monospace;font-size:12px;padding:16px;border-radius:12px;white-space:pre-wrap;word-break:break-all;"></div>
+
+  <div style="text-align:center;margin-top:12px;">
+    <button onclick="showDebug()" style="background:#e8f5ee;border:1px solid #1a6644;color:#1a6644;padding:8px 16px;border-radius:8px;font-size:12px;cursor:pointer;">🔍 Debug: Show Raw Sheet Data</button>
+  </div>
+
   <div class="samples">
     <h3>🧪 Demo — Try these IDs</h3>
     <div class="sample-chips">
@@ -351,6 +357,22 @@
         <p>No record found for <strong>${id}</strong> in the official registry.</p>
         <div class="warning-box">⚠️ <strong>Warning:</strong> This certificate may be fake or fraudulent. Do not donate. Contact Ahmedabad Head Office immediately if you suspect fraud.</div>
       </div>`;
+  }
+
+  async function showDebug() {
+    const box = document.getElementById('debugBox');
+    box.style.display = 'block';
+    box.textContent = 'Fetching sheet...';
+    try {
+      const registry = await fetchRegistry();
+      const keys = Object.keys(registry);
+      if (keys.length === 0) { box.textContent = 'No records found!'; return; }
+      const firstRecord = registry[keys[0]];
+      const headers = Object.keys(firstRecord).filter(k => k === k.trim() && k.length > 0 && k !== k.toLowerCase());
+      box.textContent = '✅ HEADERS FROM SHEET:\n' + headers.map(h => `"${h}"`).join('\n') + '\n\n📋 FIRST RECORD:\n' + JSON.stringify(firstRecord, null, 2);
+    } catch(e) {
+      box.textContent = 'Error: ' + e.message;
+    }
   }
 
   // Auto-verify from QR scan URL param
