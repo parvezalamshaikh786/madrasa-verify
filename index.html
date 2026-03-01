@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Madrasa Verification Portal</title>
+  <link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --green: #1a6644;
+      --green-light: #e8f5ee;
+      --gold: #c9993a;
+      --gold-light: #fdf6e7;
+      --red: #a33030;
+      --red-light: #fdeaea;
+      --ink: #1a1a2e;
+      --muted: #6b7280;
+      --border: #e5e7eb;
+      --bg: #f9f7f4;
+      --white: #ffffff;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      min-height: 100vh;
+      color: var(--ink);
+    }
+
+    /* ── HEADER ── */
+    header {
+      background: var(--green);
+      padding: 0;
+      position: relative;
+      overflow: hidden;
+    }
+    header::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .header-inner {
+      position: relative;
+      max-width: 680px;
+      margin: 0 auto;
+      padding: 28px 24px 24px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .header-emblem {
+      width: 52px;
+      height: 52px;
+      background: rgba(255,255,255,0.12);
+      border: 1.5px solid rgba(255,255,255,0.25);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 26px;
+      flex-shrink: 0;
+    }
+    .header-text h1 {
+      font-family: 'Amiri', serif;
+      font-size: 22px;
+      color: #fff;
+      line-height: 1.2;
+    }
+    .header-text p {
+      font-size: 12px;
+      color: rgba(255,255,255,0.65);
+      margin-top: 2px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    /* ── ARABIC BANNER ── */
+    .arabic-banner {
+      background: var(--gold);
+      text-align: center;
+      padding: 8px;
+      font-family: 'Amiri', serif;
+      font-size: 18px;
+      color: #fff;
+      letter-spacing: 0.05em;
+    }
+
+    /* ── MAIN ── */
+    main {
+      max-width: 680px;
+      margin: 0 auto;
+      padding: 32px 20px 60px;
+    }
+
+    /* ── SEARCH BOX ── */
+    .search-card {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+      margin-bottom: 28px;
+    }
+    .search-card h2 {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--ink);
+      margin-bottom: 4px;
+    }
+    .search-card p {
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 18px;
+    }
+    .input-row {
+      display: flex;
+      gap: 10px;
+    }
+    .input-row input {
+      flex: 1;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 16px;
+      font-size: 14px;
+      font-family: 'DM Sans', sans-serif;
+      color: var(--ink);
+      background: var(--bg);
+      outline: none;
+      transition: border 0.2s;
+      letter-spacing: 0.05em;
+    }
+    .input-row input:focus { border-color: var(--green); }
+    .input-row input::placeholder { color: #b0b7c3; }
+    .btn-verify {
+      background: var(--green);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      padding: 12px 22px;
+      font-size: 14px;
+      font-weight: 600;
+      font-family: 'DM Sans', sans-serif;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background 0.2s, transform 0.1s;
+    }
+    .btn-verify:hover { background: #155538; }
+    .btn-verify:active { transform: scale(0.97); }
+
+    /* ── RESULT CARD ── */
+    .result-card {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+      display: none;
+      animation: fadeUp 0.35s ease;
+    }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(14px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .result-card.visible { display: block; }
+
+    /* status bar */
+    .status-bar {
+      padding: 18px 24px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .status-bar.valid { background: var(--green-light); }
+    .status-bar.invalid { background: var(--red-light); }
+    .status-bar.pending { background: var(--gold-light); }
+
+    .status-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      flex-shrink: 0;
+    }
+    .valid .status-icon { background: var(--green); }
+    .invalid .status-icon { background: var(--red); }
+    .pending .status-icon { background: var(--gold); }
+
+    .status-text strong {
+      display: block;
+      font-size: 16px;
+      font-weight: 700;
+    }
+    .valid .status-text strong { color: var(--green); }
+    .invalid .status-text strong { color: var(--red); }
+    .pending .status-text strong { color: var(--gold); }
+    .status-text span {
+      font-size: 12.5px;
+      color: var(--muted);
+    }
+
+    /* detail grid */
+    .detail-grid {
+      padding: 24px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px 24px;
+      border-top: 1px solid var(--border);
+    }
+    .detail-item label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: var(--muted);
+      font-weight: 600;
+      display: block;
+      margin-bottom: 4px;
+    }
+    .detail-item span {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--ink);
+    }
+    .detail-item.full { grid-column: 1 / -1; }
+
+    /* approval trail */
+    .approval-trail {
+      padding: 0 24px 24px;
+    }
+    .trail-title {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: var(--muted);
+      font-weight: 600;
+      margin-bottom: 12px;
+    }
+    .trail-steps {
+      display: flex;
+      gap: 0;
+      position: relative;
+    }
+    .trail-steps::before {
+      content: '';
+      position: absolute;
+      top: 18px;
+      left: 18px;
+      right: 18px;
+      height: 2px;
+      background: var(--border);
+      z-index: 0;
+    }
+    .trail-step {
+      flex: 1;
+      text-align: center;
+      position: relative;
+      z-index: 1;
+    }
+    .step-dot {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      margin: 0 auto 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      border: 2px solid var(--border);
+      background: var(--white);
+    }
+    .step-dot.done { background: var(--green); border-color: var(--green); }
+    .step-dot.pending-dot { background: var(--gold-light); border-color: var(--gold); }
+    .trail-step p { font-size: 11.5px; color: var(--muted); font-weight: 500; }
+    .trail-step small { font-size: 10px; color: #b0b7c3; display: block; margin-top: 2px; }
+
+    /* certificate badge */
+    .cert-badge {
+      margin: 0 24px 24px;
+      background: linear-gradient(135deg, var(--gold-light), #fff8ec);
+      border: 1px solid #e8c97a;
+      border-radius: 12px;
+      padding: 14px 18px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .cert-badge .cert-icon { font-size: 28px; }
+    .cert-badge div strong { font-size: 13px; color: var(--ink); display: block; }
+    .cert-badge div span { font-size: 12px; color: var(--muted); }
+
+    /* error state */
+    .error-state {
+      padding: 40px 24px;
+      text-align: center;
+    }
+    .error-state .err-icon { font-size: 48px; margin-bottom: 12px; }
+    .error-state h3 { font-size: 17px; font-weight: 700; color: var(--red); margin-bottom: 6px; }
+    .error-state p { font-size: 13px; color: var(--muted); line-height: 1.6; }
+    .error-state .warning-box {
+      background: var(--red-light);
+      border: 1px solid #f0b8b8;
+      border-radius: 10px;
+      padding: 12px 16px;
+      margin-top: 16px;
+      font-size: 13px;
+      color: var(--red);
+      text-align: left;
+    }
+
+    /* loading */
+    .loading-state {
+      padding: 40px 24px;
+      text-align: center;
+      display: none;
+    }
+    .spinner {
+      width: 36px;
+      height: 36px;
+      border: 3px solid var(--border);
+      border-top-color: var(--green);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      margin: 0 auto 14px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-state p { font-size: 13px; color: var(--muted); }
+
+    /* ── DEMO SAMPLES ── */
+    .samples {
+      margin-top: 20px;
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 20px 24px;
+    }
+    .samples h3 { font-size: 13px; font-weight: 600; color: var(--muted); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.06em; }
+    .sample-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+    .chip {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 6px 14px;
+      font-size: 12.5px;
+      cursor: pointer;
+      transition: all 0.15s;
+      color: var(--ink);
+      font-family: 'DM Sans', sans-serif;
+    }
+    .chip:hover { background: var(--green-light); border-color: var(--green); color: var(--green); }
+
+    /* footer */
+    footer {
+      text-align: center;
+      padding: 24px;
+      font-size: 12px;
+      color: var(--muted);
+      border-top: 1px solid var(--border);
+      margin-top: 40px;
+    }
+    footer strong { color: var(--green); }
+
+    @media (max-width: 480px) {
+      .input-row { flex-direction: column; }
+      .detail-grid { grid-template-columns: 1fr; }
+      .detail-item.full { grid-column: 1; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="header-emblem">🕌</div>
+    <div class="header-text">
+      <h1>Madrasa Verification Portal</h1>
+      <p>Official Certification Registry — Ahmedabad Head Office</p>
+    </div>
+  </div>
+</header>
+<div class="arabic-banner">بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيم</div>
+
+<main>
+
+  <!-- Search -->
+  <div class="search-card">
+    <h2>Verify Certificate Authenticity</h2>
+    <p>Enter the Certificate ID printed on the madrasa's official certificate, or scan the QR code.</p>
+    <div class="input-row">
+      <input type="text" id="certInput" placeholder="e.g. MDR-AHM-00143" maxlength="20" />
+      <button class="btn-verify" onclick="verify()">Verify Now</button>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div class="loading-state" id="loading">
+    <div class="spinner"></div>
+    <p>Checking registry...</p>
+  </div>
+
+  <!-- Result -->
+  <div class="result-card" id="resultCard">
+    <!-- injected by JS -->
+  </div>
+
+  <!-- Demo chips -->
+  <div class="samples">
+    <h3>🧪 Demo — Try these IDs</h3>
+    <div class="sample-chips">
+      <span class="chip" onclick="tryId('MDR-AHM-00143')">MDR-AHM-00143 ✅ Valid</span>
+      <span class="chip" onclick="tryId('MDR-AHM-00287')">MDR-AHM-00287 ✅ Valid</span>
+      <span class="chip" onclick="tryId('MDR-AHM-00091')">MDR-AHM-00091 ⏳ City Pending</span>
+      <span class="chip" onclick="tryId('MDR-AHM-99999')">MDR-AHM-99999 ❌ Not Found</span>
+      <span class="chip" onclick="tryId('MDR-AHM-00412')">MDR-AHM-00412 ❌ Expired</span>
+    </div>
+  </div>
+
+</main>
+
+<footer>
+  Powered by <strong>Madrasa Registration Authority</strong> · Ahmedabad Head Office · All rights reserved
+</footer>
+
+<script>
+  // ── DEMO DATA (in real version, this fetches from Google Sheets API) ──
+  const REGISTRY = {
+    "MDR-AHM-00143": {
+      status: "valid",
+      name: "Darul Uloom Al-Islamiyah",
+      city: "Ahmedabad, Gujarat",
+      head: "Maulana Abdul Rahman Khan",
+      phone: "+91 98765 43210",
+      registered: "12 March 2023",
+      ahmedabadApproval: "18 March 2023",
+      cityApproval: "25 March 2023",
+      cityApprovedBy: "Surat City Office",
+      validUntil: "17 March 2026",
+      students: "320",
+      type: "Hifz + Alim Course",
+    },
+    "MDR-AHM-00287": {
+      status: "valid",
+      name: "Jamia Islamia Tarbiyatul Quran",
+      city: "Surat, Gujarat",
+      head: "Maulana Yusuf Patel",
+      phone: "+91 90123 56789",
+      registered: "5 July 2023",
+      ahmedabadApproval: "11 July 2023",
+      cityApproval: "19 July 2023",
+      cityApprovedBy: "Surat City Office",
+      validUntil: "10 July 2026",
+      students: "180",
+      type: "Hifz + Basic Islamic Studies",
+    },
+    "MDR-AHM-00091": {
+      status: "pending",
+      name: "Madrasa Noor ul Huda",
+      city: "Vadodara, Gujarat",
+      head: "Maulana Imran Sheikh",
+      phone: "+91 87654 32109",
+      registered: "2 Jan 2024",
+      ahmedabadApproval: "9 Jan 2024",
+      cityApproval: null,
+      cityApprovedBy: null,
+      validUntil: null,
+      students: "95",
+      type: "Hifz Course",
+    },
+    "MDR-AHM-00412": {
+      status: "expired",
+      name: "Darul Hifz Al-Furqan",
+      city: "Rajkot, Gujarat",
+      head: "Maulana Farhan Qureshi",
+      phone: "+91 76543 21098",
+      registered: "14 Feb 2021",
+      ahmedabadApproval: "20 Feb 2021",
+      cityApproval: "28 Feb 2021",
+      cityApprovedBy: "Rajkot City Office",
+      validUntil: "19 Feb 2024",
+      students: "210",
+      type: "Alim Course",
+    },
+  };
+
+  function tryId(id) {
+    document.getElementById('certInput').value = id;
+    verify();
+  }
+
+  function verify() {
+    const raw = document.getElementById('certInput').value.trim().toUpperCase();
+    if (!raw) return;
+
+    const card = document.getElementById('resultCard');
+    const loading = document.getElementById('loading');
+
+    card.classList.remove('visible');
+    card.innerHTML = '';
+    loading.style.display = 'block';
+
+    setTimeout(() => {
+      loading.style.display = 'none';
+      const data = REGISTRY[raw];
+      card.innerHTML = data ? buildResult(data, raw) : buildNotFound(raw);
+      card.classList.add('visible');
+      card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }, 900);
+  }
+
+  function buildResult(d, id) {
+    if (d.status === 'valid') return buildValid(d, id);
+    if (d.status === 'pending') return buildPending(d, id);
+    if (d.status === 'expired') return buildExpired(d, id);
+  }
+
+  function buildValid(d, id) {
+    return `
+      <div class="status-bar valid">
+        <div class="status-icon">✅</div>
+        <div class="status-text">
+          <strong>Verified & Authentic</strong>
+          <span>Certificate ID: ${id} · Valid until ${d.validUntil}</span>
+        </div>
+      </div>
+      <div class="detail-grid">
+        <div class="detail-item full">
+          <label>Madrasa Name</label>
+          <span>${d.name}</span>
+        </div>
+        <div class="detail-item">
+          <label>Location</label>
+          <span>${d.city}</span>
+        </div>
+        <div class="detail-item">
+          <label>Type of Courses</label>
+          <span>${d.type}</span>
+        </div>
+        <div class="detail-item">
+          <label>Head / Principal</label>
+          <span>${d.head}</span>
+        </div>
+        <div class="detail-item">
+          <label>Students Enrolled</label>
+          <span>${d.students}</span>
+        </div>
+        <div class="detail-item">
+          <label>Registered On</label>
+          <span>${d.registered}</span>
+        </div>
+        <div class="detail-item">
+          <label>Valid Until</label>
+          <span>${d.validUntil}</span>
+        </div>
+      </div>
+      <div class="approval-trail">
+        <div class="trail-title">Approval Trail</div>
+        <div class="trail-steps">
+          <div class="trail-step">
+            <div class="step-dot done">🏛️</div>
+            <p>AHM Registration</p>
+            <small>${d.registered}</small>
+          </div>
+          <div class="trail-step">
+            <div class="step-dot done">✔️</div>
+            <p>HQ Audit</p>
+            <small>${d.ahmedabadApproval}</small>
+          </div>
+          <div class="trail-step">
+            <div class="step-dot done">🏙️</div>
+            <p>${d.cityApprovedBy}</p>
+            <small>${d.cityApproval}</small>
+          </div>
+          <div class="trail-step">
+            <div class="step-dot done">📜</div>
+            <p>Certified</p>
+            <small>Active</small>
+          </div>
+        </div>
+      </div>
+      <div class="cert-badge">
+        <div class="cert-icon">🏅</div>
+        <div>
+          <strong>Authorized to Collect Donations</strong>
+          <span>This madrasa holds valid Ahmedabad HQ certification and city approval</span>
+        </div>
+      </div>
+    `;
+  }
+
+  function buildPending(d, id) {
+    return `
+      <div class="status-bar pending">
+        <div class="status-icon">⏳</div>
+        <div class="status-text">
+          <strong>City Approval Pending</strong>
+          <span>Certificate ID: ${id} · Ahmedabad approved, awaiting city certification</span>
+        </div>
+      </div>
+      <div class="detail-grid">
+        <div class="detail-item full">
+          <label>Madrasa Name</label>
+          <span>${d.name}</span>
+        </div>
+        <div class="detail-item">
+          <label>Location</label>
+          <span>${d.city}</span>
+        </div>
+        <div class="detail-item">
+          <label>Head / Principal</label>
+          <span>${d.head}</span>
+        </div>
+      </div>
+      <div class="approval-trail">
+        <div class="trail-title">Approval Trail</div>
+        <div class="trail-steps">
+          <div class="trail-step">
+            <div class="step-dot done">🏛️</div>
+            <p>AHM Registration</p>
+            <small>${d.registered}</small>
+          </div>
+          <div class="trail-step">
+            <div class="step-dot done">✔️</div>
+            <p>HQ Audit</p>
+            <small>${d.ahmedabadApproval}</small>
+          </div>
+          <div class="trail-step">
+            <div class="step-dot pending-dot">⏳</div>
+            <p>City Approval</p>
+            <small>Pending</small>
+          </div>
+          <div class="trail-step">
+            <div class="step-dot">📜</div>
+            <p>Certification</p>
+            <small>Not yet</small>
+          </div>
+        </div>
+      </div>
+      <div class="cert-badge" style="background: var(--gold-light); border-color: #e8c97a;">
+        <div class="cert-icon">⚠️</div>
+        <div>
+          <strong>Not Yet Authorized to Collect Donations</strong>
+          <span>City approval is required before this madrasa can solicit donations</span>
+        </div>
+      </div>
+    `;
+  }
+
+  function buildExpired(d, id) {
+    return `
+      <div class="status-bar invalid">
+        <div class="status-icon">❌</div>
+        <div class="status-text">
+          <strong>Certificate Expired</strong>
+          <span>Certificate ID: ${id} · Expired on ${d.validUntil}</span>
+        </div>
+      </div>
+      <div class="detail-grid">
+        <div class="detail-item full">
+          <label>Madrasa Name</label>
+          <span>${d.name}</span>
+        </div>
+        <div class="detail-item">
+          <label>Location</label>
+          <span>${d.city}</span>
+        </div>
+        <div class="detail-item">
+          <label>Expired On</label>
+          <span style="color:var(--red)">${d.validUntil}</span>
+        </div>
+      </div>
+      <div class="error-state" style="padding: 0 24px 24px;">
+        <div class="warning-box">
+          ⚠️ <strong>Do not donate.</strong> This certificate has expired. The madrasa must renew their registration with Ahmedabad HQ before collecting donations again.
+        </div>
+      </div>
+    `;
+  }
+
+  function buildNotFound(id) {
+    return `
+      <div class="error-state">
+        <div class="err-icon">🚫</div>
+        <h3>Certificate Not Found</h3>
+        <p>No record found for <strong>${id}</strong> in the official registry.</p>
+        <div class="warning-box">
+          ⚠️ <strong>Warning:</strong> This certificate may be fake or fraudulent. Do not donate to this individual. If you suspect fraud, please contact the Ahmedabad Head Office immediately.
+        </div>
+      </div>
+    `;
+  }
+
+  // Auto-detect ID from URL param (for QR code scanning)
+  window.addEventListener('load', () => {
+    const params = new URLSearchParams(window.location.search);
+    const id = params.get('id');
+    if (id) {
+      document.getElementById('certInput').value = id;
+      verify();
+    }
+  });
+</script>
+</body>
+</html>
+```
