@@ -198,15 +198,24 @@
     };
 
     const headers = parseRow(lines[0]).map(h => h.replace(/"/g, "").trim());
+    console.log("Sheet headers:", headers);
     REGISTRY = {};
     for (let i = 1; i < lines.length; i++) {
       const row = parseRow(lines[i]);
       const obj = {};
-      headers.forEach((h, j) => { obj[h] = (row[j] || "").replace(/"/g, "").trim(); });
-      const id = obj["Madrasa ID"];
+      headers.forEach((h, j) => {
+        const val = (row[j] || "").replace(/"/g, "").trim();
+        obj[h] = val;
+        obj[h.toLowerCase().trim()] = val;
+      });
+      const id = obj["Madrasa ID"] || obj["madrasa id"];
       if (id) REGISTRY[id.toUpperCase()] = obj;
     }
     return REGISTRY;
+  }
+
+  function get(d, key) {
+    return d[key] || d[key.toLowerCase()] || d[key.toLowerCase().replace(/ /g,"")] || "—";
   }
 
   function tryId(id) {
@@ -242,8 +251,8 @@
   }
 
   function buildResult(d, id) {
-    const statusAHM = (d["Status by AHM"] || "").toLowerCase().trim();
-    const validity = (d["Status - Validity"] || "").toLowerCase().trim();
+    const statusAHM = get(d,"Status by AHM").toLowerCase().trim();
+    const validity = get(d,"Status - Validity").toLowerCase().trim();
     if (statusAHM.includes("pending")) return buildPending(d, id);
     if (statusAHM.includes("expired") || validity.includes("expired")) return buildExpired(d, id);
     if (statusAHM.includes("approved")) return buildValid(d, id);
@@ -260,21 +269,21 @@
         </div>
       </div>
       <div class="detail-grid">
-        <div class="detail-item full"><label>Madrasa Name</label><span>${d["Madrasa Name"]||"—"}</span></div>
-        <div class="detail-item"><label>City</label><span>${d["City"]||"—"}</span></div>
-        <div class="detail-item"><label>Course Type</label><span>${d["Course Type"]||"—"}</span></div>
-        <div class="detail-item"><label>Mohtameem</label><span>${d["Mohtameem Name"]||"—"}</span></div>
-        <div class="detail-item"><label>Contact</label><span>${d["Phone"]||"—"}</span></div>
-        <div class="detail-item"><label>Total Students</label><span>${d["Total Students"]||"—"}</span></div>
-        <div class="detail-item"><label>Issued On</label><span>${d["Date"]||"—"}</span></div>
-        <div class="detail-item"><label>Valid Until</label><span>${d["Valid Until"]||"—"}</span></div>
+        <div class="detail-item full"><label>Madrasa Name</label><span>${get(d,"Madrasa Name")}</span></div>
+        <div class="detail-item"><label>City</label><span>${get(d,"City")}</span></div>
+        <div class="detail-item"><label>Course Type</label><span>${get(d,"Course Type")}</span></div>
+        <div class="detail-item"><label>Mohtameem</label><span>${get(d,"Mohtameem Name")}</span></div>
+        <div class="detail-item"><label>Contact</label><span>${get(d,"Phone")}</span></div>
+        <div class="detail-item"><label>Total Students</label><span>${get(d,"Total Students")}</span></div>
+        <div class="detail-item"><label>Issued On</label><span>${get(d,"Date")}</span></div>
+        <div class="detail-item"><label>Valid Until</label><span>${get(d,"Valid Until")}</span></div>
       </div>
       <div class="approval-trail">
         <div class="trail-title">Approval Trail</div>
         <div class="trail-steps">
-          <div class="trail-step"><div class="step-dot done">🏛️</div><p>Registration</p><small>${d["Date"]||"—"}</small></div>
-          <div class="trail-step"><div class="step-dot done">✔️</div><p>AHM Audit</p><small>${d["AHM Approval Date"]||"—"}</small></div>
-          <div class="trail-step"><div class="step-dot done">🏙️</div><p>${d["City Approved By"]||"City"}</p><small>${d["City Approval Date"]||"—"}</small></div>
+          <div class="trail-step"><div class="step-dot done">🏛️</div><p>Registration</p><small>${get(d,"Date")}</small></div>
+          <div class="trail-step"><div class="step-dot done">✔️</div><p>AHM Audit</p><small>${get(d,"AHM Approval Date")}</small></div>
+          <div class="trail-step"><div class="step-dot done">🏙️</div><p>${get(d,"City Approved By")}</p><small>${get(d,"City Approval Date")}</small></div>
           <div class="trail-step"><div class="step-dot done">📜</div><p>Certified</p><small>Active</small></div>
         </div>
       </div>
@@ -294,16 +303,16 @@
         </div>
       </div>
       <div class="detail-grid">
-        <div class="detail-item full"><label>Madrasa Name</label><span>${d["Madrasa Name"]||"—"}</span></div>
-        <div class="detail-item"><label>City</label><span>${d["City"]||"—"}</span></div>
-        <div class="detail-item"><label>Mohtameem</label><span>${d["Mohtameem Name"]||"—"}</span></div>
-        <div class="detail-item"><label>Registered On</label><span>${d["Date"]||"—"}</span></div>
+        <div class="detail-item full"><label>Madrasa Name</label><span>${get(d,"Madrasa Name")}</span></div>
+        <div class="detail-item"><label>City</label><span>${get(d,"City")}</span></div>
+        <div class="detail-item"><label>Mohtameem</label><span>${get(d,"Mohtameem Name")}</span></div>
+        <div class="detail-item"><label>Registered On</label><span>${get(d,"Date")}</span></div>
       </div>
       <div class="approval-trail">
         <div class="trail-title">Approval Trail</div>
         <div class="trail-steps">
-          <div class="trail-step"><div class="step-dot done">🏛️</div><p>Registration</p><small>${d["Date"]||"—"}</small></div>
-          <div class="trail-step"><div class="step-dot done">✔️</div><p>AHM Audit</p><small>${d["AHM Approval Date"]||"—"}</small></div>
+          <div class="trail-step"><div class="step-dot done">🏛️</div><p>Registration</p><small>${get(d,"Date")}</small></div>
+          <div class="trail-step"><div class="step-dot done">✔️</div><p>AHM Audit</p><small>${get(d,"AHM Approval Date")}</small></div>
           <div class="trail-step"><div class="step-dot pending-dot">⏳</div><p>City Approval</p><small>Pending</small></div>
           <div class="trail-step"><div class="step-dot">📜</div><p>Certification</p><small>Not yet</small></div>
         </div>
@@ -320,14 +329,14 @@
         <div class="status-icon">❌</div>
         <div class="status-text">
           <strong>Certificate Expired</strong>
-          <span>ID: ${id} · Expired on ${d["Valid Until"]||"—"}</span>
+          <span>ID: ${id} · Expired on ${get(d,"Valid Until")}</span>
         </div>
       </div>
       <div class="detail-grid">
-        <div class="detail-item full"><label>Madrasa Name</label><span>${d["Madrasa Name"]||"—"}</span></div>
-        <div class="detail-item"><label>City</label><span>${d["City"]||"—"}</span></div>
-        <div class="detail-item"><label>Mohtameem</label><span>${d["Mohtameem Name"]||"—"}</span></div>
-        <div class="detail-item"><label>Expired On</label><span style="color:var(--red);font-weight:600">${d["Valid Until"]||"—"}</span></div>
+        <div class="detail-item full"><label>Madrasa Name</label><span>${get(d,"Madrasa Name")}</span></div>
+        <div class="detail-item"><label>City</label><span>${get(d,"City")}</span></div>
+        <div class="detail-item"><label>Mohtameem</label><span>${get(d,"Mohtameem Name")}</span></div>
+        <div class="detail-item"><label>Expired On</label><span style="color:var(--red);font-weight:600">${get(d,"Valid Until")}</span></div>
       </div>
       <div class="error-state" style="padding:0 24px 24px">
         <div class="warning-box">⚠️ <strong>Do not donate.</strong> This certificate has expired. The madrasa must renew with Ahmedabad HQ before collecting donations.</div>
