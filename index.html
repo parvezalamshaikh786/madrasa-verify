@@ -169,38 +169,38 @@
 </footer>
 
 <script>
-  const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRG8Rr816F4c6T8rym3gVGeFcVLO_5KYDK_YF1g0CXU0i1zMXVLiQPa-Sc0OzDNFMW7ZU7M_vH2F83c/pub?gid=0&single=true&output=csv";
+  // Google Sheets published spreadsheet ID (from your pub URL)
+  const SHEET_ID = "2PACX-1vRG8Rr816F4c6T8rym3gVGeFcVLO_5KYDK_YF1g0CXU0i1zMXVLiQPa-Sc0OzDNFMW7ZU7M_vH2F83c";
+  const GVIZ_URL = `https://docs.google.com/spreadsheets/d/e/${SHEET_ID}/pub?gid=0&single=true&output=csv`;
 
   let REGISTRY = null;
 
-  function parseCSV(text) {
-    // Handle quoted fields with commas inside
-    const rows = [];
-    const lines = text.trim().split("\n");
-    for (const line of lines) {
-      const row = [];
-      let inQuote = false, cell = "";
-      for (let i = 0; i < line.length; i++) {
-        const ch = line[i];
-        if (ch === '"') { inQuote = !inQuote; }
-        else if (ch === ',' && !inQuote) { row.push(cell.trim()); cell = ""; }
-        else { cell += ch; }
-      }
-      row.push(cell.trim());
-      rows.push(row);
-    }
-    return rows;
-  }
-
   async function fetchRegistry() {
     if (REGISTRY) return REGISTRY;
-    const resp = await fetch(CSV_URL);
+
+    // Use a CORS proxy to bypass browser restrictions
+    const PROXY = "https://corsproxy.io/?";
+    const resp = await fetch(PROXY + encodeURIComponent(GVIZ_URL));
     const text = await resp.text();
-    const rows = parseCSV(text);
-    const headers = rows[0].map(h => h.replace(/"/g, "").trim());
+
+    // Parse CSV properly (handle quoted fields)
+    const lines = text.trim().split("\n");
+    const parseRow = line => {
+      const row = []; let cell = "", inQ = false;
+      for (let i = 0; i < line.length; i++) {
+        const c = line[i];
+        if (c === '"') inQ = !inQ;
+        else if (c === ',' && !inQ) { row.push(cell.trim()); cell = ""; }
+        else cell += c;
+      }
+      row.push(cell.trim());
+      return row;
+    };
+
+    const headers = parseRow(lines[0]).map(h => h.replace(/"/g, "").trim());
     REGISTRY = {};
-    for (let i = 1; i < rows.length; i++) {
-      const row = rows[i];
+    for (let i = 1; i < lines.length; i++) {
+      const row = parseRow(lines[i]);
       const obj = {};
       headers.forEach((h, j) => { obj[h] = (row[j] || "").replace(/"/g, "").trim(); });
       const id = obj["Madrasa ID"];
